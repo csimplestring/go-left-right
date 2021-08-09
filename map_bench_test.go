@@ -6,6 +6,11 @@ import (
 	"testing"
 )
 
+type testMap interface {
+	Put(k, v int)
+	Get(k int) (int, bool)
+}
+
 type LockMap struct {
 	m    map[int]int
 	lock sync.RWMutex
@@ -83,55 +88,75 @@ func BenchmarkLockMap_Read(b *testing.B) {
 	}
 }
 
-func BenchmarkLRMap_Read_Write(b *testing.B) {
-	m := InitLRMap(1000000)
-
+func run(m testMap, reader int) {
 	wg := sync.WaitGroup{}
 
-	wg.Add(1)
-	go func() {
-		for k := 0; k < b.N; k++ {
-			m.Get(rand.Intn(10000))
-		}
-		wg.Done()
-	}()
+	for k := 0; k < reader; k++ {
+		wg.Add(1)
+		go func() {
+			for i := 0; i < 100; i++ {
+				m.Get(rand.Intn(10000))
+			}
+			wg.Done()
+		}()
+	}
 
 	wg.Add(1)
 	go func() {
-		for k := 0; k < b.N/10; k++ {
+		for i := 0; i < 100; i++ {
 			k := rand.Intn(10000)
 			m.Put(k, k)
 		}
 		wg.Done()
-
 	}()
 
 	wg.Wait()
-
 }
 
-func BenchmarkLockMap_Read_Write(b *testing.B) {
+func BenchmarkLRMap_Read_Write_5_1(b *testing.B) {
+	m := InitLRMap(1000000)
+
+	for i := 0; i < b.N; i++ {
+		run(m, 5)
+	}
+}
+
+func BenchmarkLockMap_Read_Write_5_1(b *testing.B) {
 	m := InitLockMap(1000000)
 
-	wg := sync.WaitGroup{}
+	for i := 0; i < b.N; i++ {
+		run(m, 5)
+	}
+}
 
-	wg.Add(1)
-	go func() {
-		for k := 0; k < b.N; k++ {
-			m.Get(rand.Intn(10000))
-		}
-		wg.Done()
-	}()
+func BenchmarkLRMap_Read_Write_10_1(b *testing.B) {
+	m := InitLRMap(1000000)
 
-	wg.Add(1)
-	go func() {
-		for k := 0; k < b.N/10; k++ {
-			k := rand.Intn(10000)
-			m.Put(k, k)
-		}
-		wg.Done()
+	for i := 0; i < b.N; i++ {
+		run(m, 10)
+	}
+}
 
-	}()
+func BenchmarkLockMap_Read_Write_10_1(b *testing.B) {
+	m := InitLockMap(1000000)
 
-	wg.Wait()
+	for i := 0; i < b.N; i++ {
+		run(m, 10)
+	}
+}
+
+func BenchmarkLRMap_Read_Write_15_1(b *testing.B) {
+	m := InitLRMap(1000000)
+
+	for i := 0; i < b.N; i++ {
+		run(m, 15)
+	}
+}
+
+func BenchmarkLockMap_Read_Write_15_1(b *testing.B) {
+	m := InitLockMap(1000000)
+
+	for i := 0; i < b.N; i++ {
+		run(m, 15)
+	}
 }

@@ -2,6 +2,7 @@ package lrc
 
 import (
 	"fmt"
+	"runtime"
 	"sync"
 	"sync/atomic"
 )
@@ -58,13 +59,13 @@ func (lr *LRMap) toggleVersionAndWait() {
 	nextVI := int((localVI + 1) % 2)
 
 	for !lr.readIndicators[nextVI].isEmpty() {
-
+		runtime.Gosched()
 	}
 
 	atomic.StoreInt32(lr.versionIndex, int32(nextVI))
 
 	for !lr.readIndicators[prevVI].isEmpty() {
-
+		runtime.Gosched()
 	}
 }
 
