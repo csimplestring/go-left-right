@@ -94,7 +94,7 @@ func run(m testMap, reader int) {
 	for k := 0; k < reader; k++ {
 		wg.Add(1)
 		go func() {
-			for i := 0; i < 100; i++ {
+			for i := 0; i < 1000000; i++ {
 				m.Get(rand.Intn(10000))
 			}
 			wg.Done()
@@ -103,7 +103,7 @@ func run(m testMap, reader int) {
 
 	wg.Add(1)
 	go func() {
-		for i := 0; i < 100; i++ {
+		for i := 0; i < 1000000; i++ {
 			k := rand.Intn(10000)
 			m.Put(k, k)
 		}
@@ -116,6 +116,7 @@ func run(m testMap, reader int) {
 func BenchmarkLRMap_Read_Write_5_1(b *testing.B) {
 	m := InitLRMap(1000000)
 
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		run(m, 5)
 	}
@@ -124,6 +125,7 @@ func BenchmarkLRMap_Read_Write_5_1(b *testing.B) {
 func BenchmarkLockMap_Read_Write_5_1(b *testing.B) {
 	m := InitLockMap(1000000)
 
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		run(m, 5)
 	}
@@ -132,6 +134,7 @@ func BenchmarkLockMap_Read_Write_5_1(b *testing.B) {
 func BenchmarkLRMap_Read_Write_10_1(b *testing.B) {
 	m := InitLRMap(1000000)
 
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		run(m, 10)
 	}
@@ -140,23 +143,44 @@ func BenchmarkLRMap_Read_Write_10_1(b *testing.B) {
 func BenchmarkLockMap_Read_Write_10_1(b *testing.B) {
 	m := InitLockMap(1000000)
 
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		run(m, 10)
 	}
 }
 
-func BenchmarkLRMap_Read_Write_15_1(b *testing.B) {
+func BenchmarkLRMap_Read_Write_50_1(b *testing.B) {
 	m := InitLRMap(1000000)
 
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		run(m, 15)
+		run(m, 50)
 	}
 }
 
-func BenchmarkLockMap_Read_Write_15_1(b *testing.B) {
+func BenchmarkLockMap_Read_Write_50_1(b *testing.B) {
 	m := InitLockMap(1000000)
 
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		run(m, 15)
+		run(m, 50)
+	}
+}
+
+func BenchmarkLRMap_Read_Write_100_1(b *testing.B) {
+	m := InitLRMap(1000000)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		run(m, 100)
+	}
+}
+
+func BenchmarkLockMap_Read_Write_100_1(b *testing.B) {
+	m := InitLockMap(1000000)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		run(m, 100)
 	}
 }
