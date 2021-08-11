@@ -1,3 +1,3 @@
-module github.com/csimplestring/lrc
+module github.com/csimplestring/go-left-right
 
 go 1.15
