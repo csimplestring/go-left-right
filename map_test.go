@@ -19,14 +19,12 @@ func TestLRMap(t *testing.T) {
 		}()
 	}
 
-	for i := 0; i < 100; i++ {
-		wg.Add(1)
-		go func() {
-			k := rand.Intn(10000)
-			lrmap.Put(k, k)
-			wg.Done()
-		}()
-	}
+	wg.Add(1)
+	go func() {
+		k := rand.Intn(10000)
+		lrmap.Put(k, k)
+		wg.Done()
+	}()
 
 	wg.Wait()
 }

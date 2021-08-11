@@ -1,44 +1,38 @@
 package lrc
 
 import (
-	"fmt"
 	"runtime"
-	"sync"
 	"sync/atomic"
 )
 
-const read_left int32 = -1
-const read_right int32 = 1
+const ReadOnLeft int32 = -1
+const ReadOnRight int32 = 1
 
 type LRMap struct {
-	readIndicators [2]*ReadIndicator
+	readIndicators [2]*readIndicator
 	versionIndex   *int32
-	leftRight      *int32
+	sideToRead     *int32
 
 	left  map[int]int
 	right map[int]int
-
-	wm sync.Mutex
 }
 
 func New() *LRMap {
 
 	m := &LRMap{
-		readIndicators: [2]*ReadIndicator{
+		readIndicators: [2]*readIndicator{
 			newReadIndicator(),
 			newReadIndicator(),
 		},
 		versionIndex: new(int32),
-		leftRight:    new(int32),
+		sideToRead:   new(int32),
 
 		left:  make(map[int]int),
 		right: make(map[int]int),
-
-		wm: sync.Mutex{},
 	}
 
 	*m.versionIndex = 0
-	*m.leftRight = read_left
+	*m.sideToRead = ReadOnLeft
 	return m
 }
 
@@ -73,8 +67,8 @@ func (lr *LRMap) Get(k int) (val int, exist bool) {
 
 	lvi := lr.arrive()
 
-	which := atomic.LoadInt32(lr.leftRight)
-	if which == read_left {
+	which := atomic.LoadInt32(lr.sideToRead)
+	if which == ReadOnLeft {
 		val, exist = lr.left[k]
 	} else {
 		val, exist = lr.right[k]
@@ -86,20 +80,20 @@ func (lr *LRMap) Get(k int) (val int, exist bool) {
 
 func (lr *LRMap) Put(key, val int) {
 
-	which := atomic.LoadInt32(lr.leftRight)
-	if which == read_left {
+	side := atomic.LoadInt32(lr.sideToRead)
+	if side == ReadOnLeft {
 		// write on right
 		lr.right[key] = val
-		atomic.StoreInt32(lr.leftRight, read_right)
+		atomic.StoreInt32(lr.sideToRead, ReadOnRight)
 		lr.toggleVersionAndWait()
 		lr.left[key] = val
-	} else if which == read_right {
+	} else if side == ReadOnRight {
 		// write on left
 		lr.left[key] = val
-		atomic.StoreInt32(lr.leftRight, read_left)
+		atomic.StoreInt32(lr.sideToRead, ReadOnLeft)
 		lr.toggleVersionAndWait()
 		lr.right[key] = val
 	} else {
-		fmt.Println("fuuuu")
+		panic("illegal state: you can only read on LEFT or RIGHT")
 	}
 }
