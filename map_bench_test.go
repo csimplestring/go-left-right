@@ -6,6 +6,8 @@ import (
 	"testing"
 )
 
+const test_entry_size int = 1000
+
 type testMap interface {
 	Put(k, v int)
 	Get(k int) (int, bool)
@@ -94,8 +96,8 @@ func run(m testMap, reader int) {
 	for k := 0; k < reader; k++ {
 		wg.Add(1)
 		go func() {
-			for i := 0; i < 1000000; i++ {
-				m.Get(rand.Intn(10000))
+			for i := 0; i < test_entry_size; i++ {
+				m.Get(i)
 			}
 			wg.Done()
 		}()
@@ -103,9 +105,9 @@ func run(m testMap, reader int) {
 
 	wg.Add(1)
 	go func() {
-		for i := 0; i < 1000000; i++ {
-			k := rand.Intn(10000)
-			m.Put(k, k)
+		for i := 0; i < test_entry_size; i++ {
+			k := i
+			m.Put(k, k+1)
 		}
 		wg.Done()
 	}()
@@ -114,72 +116,64 @@ func run(m testMap, reader int) {
 }
 
 func BenchmarkLRMap_Read_Write_5_1(b *testing.B) {
-	m := InitLRMap(1000000)
+	m := InitLRMap(test_entry_size)
 
-	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		run(m, 5)
 	}
 }
 
 func BenchmarkLockMap_Read_Write_5_1(b *testing.B) {
-	m := InitLockMap(1000000)
+	m := InitLockMap(test_entry_size)
 
-	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		run(m, 5)
 	}
 }
 
 func BenchmarkLRMap_Read_Write_10_1(b *testing.B) {
-	m := InitLRMap(1000000)
+	m := InitLRMap(test_entry_size)
 
-	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		run(m, 10)
 	}
 }
 
 func BenchmarkLockMap_Read_Write_10_1(b *testing.B) {
-	m := InitLockMap(1000000)
+	m := InitLockMap(test_entry_size)
 
-	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		run(m, 10)
 	}
 }
 
 func BenchmarkLRMap_Read_Write_50_1(b *testing.B) {
-	m := InitLRMap(1000000)
+	m := InitLRMap(test_entry_size)
 
-	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		run(m, 50)
 	}
 }
 
 func BenchmarkLockMap_Read_Write_50_1(b *testing.B) {
-	m := InitLockMap(1000000)
+	m := InitLockMap(test_entry_size)
 
-	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		run(m, 50)
 	}
 }
 
 func BenchmarkLRMap_Read_Write_100_1(b *testing.B) {
-	m := InitLRMap(1000000)
+	m := InitLRMap(test_entry_size)
 
-	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		run(m, 100)
 	}
 }
 
 func BenchmarkLockMap_Read_Write_100_1(b *testing.B) {
-	m := InitLockMap(1000000)
+	m := InitLockMap(test_entry_size)
 
-	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		run(m, 100)
 	}
