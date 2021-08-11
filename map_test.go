@@ -1,30 +1,23 @@
 package lrc
 
 import (
-	"math/rand"
-	"sync"
 	"testing"
 )
 
 func TestLRMap(t *testing.T) {
 	lrmap := newIntMap()
 
-	wg := sync.WaitGroup{}
-
-	for i := 0; i < 100000; i++ {
-		wg.Add(1)
-		go func() {
-			lrmap.Get(rand.Intn(10000))
-			wg.Done()
-		}()
+	_, exist := lrmap.Get(1)
+	if exist {
+		t.Error("should not exist")
 	}
 
-	wg.Add(1)
-	go func() {
-		k := rand.Intn(10000)
-		lrmap.Put(k, k)
-		wg.Done()
-	}()
-
-	wg.Wait()
+	lrmap.Put(1, 1)
+	v, exist := lrmap.Get(1)
+	if v != 1 {
+		t.Error("not equal")
+	}
+	if !exist {
+		t.Error("should exist")
+	}
 }
