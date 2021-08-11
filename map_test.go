@@ -7,7 +7,7 @@ import (
 )
 
 func TestLRMap(t *testing.T) {
-	lrmap := New()
+	lrmap := newIntMap()
 
 	wg := sync.WaitGroup{}
 

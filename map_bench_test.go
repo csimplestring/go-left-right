@@ -45,7 +45,7 @@ func InitLockMap(num int) *LockMap {
 }
 
 func InitLRMap(num int) *LRMap {
-	lrmap := New()
+	lrmap := newIntMap()
 
 	for i := 0; i < num; i++ {
 		lrmap.Put(i, i)
