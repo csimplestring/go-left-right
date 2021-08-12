@@ -8,15 +8,15 @@ import (
 const ReadOnLeft int32 = -1
 const ReadOnRight int32 = 1
 
-type LeftRight struct {
+type LeftRightPrimitive struct {
 	readIndicators [2]*readIndicator
 	versionIndex   *int32
 	sideToRead     *int32
 }
 
-func New() *LeftRight {
+func New() *LeftRightPrimitive {
 
-	m := &LeftRight{
+	m := &LeftRightPrimitive{
 		readIndicators: [2]*readIndicator{
 			newReadIndicator(),
 			newReadIndicator(),
@@ -30,17 +30,17 @@ func New() *LeftRight {
 	return m
 }
 
-func (lr *LeftRight) arrive() int {
+func (lr *LeftRightPrimitive) ReaderArrive() int {
 	idx := atomic.LoadInt32(lr.versionIndex)
 	lr.readIndicators[idx].arrive()
 	return int(idx)
 }
 
-func (lr *LeftRight) depart(localVI int) {
+func (lr *LeftRightPrimitive) ReaderDepart(localVI int) {
 	lr.readIndicators[localVI].depart()
 }
 
-func (lr *LeftRight) toggleVersionAndWait() {
+func (lr *LeftRightPrimitive) WriterToggleVersionAndWait() {
 
 	localVI := atomic.LoadInt32(lr.versionIndex)
 	prevVI := int(localVI % 2)
@@ -57,9 +57,9 @@ func (lr *LeftRight) toggleVersionAndWait() {
 	}
 }
 
-func (lr *LeftRight) ApplyReadFn(l interface{}, r interface{}, fn func(interface{})) {
+func (lr *LeftRightPrimitive) ApplyReadFn(l interface{}, r interface{}, fn func(interface{})) {
 
-	lvi := lr.arrive()
+	lvi := lr.ReaderArrive()
 
 	which := atomic.LoadInt32(lr.sideToRead)
 	if which == ReadOnLeft {
@@ -68,7 +68,7 @@ func (lr *LeftRight) ApplyReadFn(l interface{}, r interface{}, fn func(interface
 		fn(r)
 	}
 
-	lr.depart(lvi)
+	lr.ReaderDepart(lvi)
 	return
 }
 
@@ -79,13 +79,13 @@ func (lr *LRMap) ApplyWriteFn(l interface{}, r interface{}, fn func(interface{})
 		// write on right
 		fn(r)
 		atomic.StoreInt32(lr.sideToRead, ReadOnRight)
-		lr.toggleVersionAndWait()
+		lr.WriterToggleVersionAndWait()
 		fn(l)
 	} else if side == ReadOnRight {
 		// write on left
 		fn(l)
 		atomic.StoreInt32(lr.sideToRead, ReadOnLeft)
-		lr.toggleVersionAndWait()
+		lr.WriterToggleVersionAndWait()
 		fn(r)
 	} else {
 		panic("illegal state: you can only read on LEFT or RIGHT")

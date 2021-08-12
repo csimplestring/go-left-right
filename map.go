@@ -1,7 +1,7 @@
 package lrc
 
 type LRMap struct {
-	*LeftRight
+	*LeftRightPrimitive
 
 	left  map[int]int
 	right map[int]int
@@ -14,7 +14,7 @@ func newIntMap() *LRMap {
 		right: make(map[int]int),
 	}
 
-	m.LeftRight = New()
+	m.LeftRightPrimitive = New()
 
 	return m
 }
