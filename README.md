@@ -1,6 +1,6 @@
 
 # Go Left Right Concurrency
-A Go implementation of the left-right concurrency control algorithm in paper <Left-Right - A Concurrency Control Technique with Wait-Free Population Oblivious Reads>
+A Go implementation of the left-right concurrency control algorithm in paper *<Left-Right - A Concurrency Control Technique with Wait-Free Population Oblivious Reads>*
 
 This library provides a concurrency primitive for high concurrency reads over a single-writer data structure. The micro benchmark shows the left-right pattern is 2-3x faster than the RWMutex.
 
