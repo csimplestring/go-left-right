@@ -1,5 +1,6 @@
 package lrc
 
+// LRMap utilises the left-right pattern to handle concurrent read-write.
 type LRMap struct {
 	*LeftRightPrimitive
 

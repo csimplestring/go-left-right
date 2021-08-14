@@ -10,6 +10,8 @@ In Go, RWMutex is your best choice in most cases when handling concurrent read/w
 
 In this library, an example left-right-pattern map was implemented to compare with the classic RWMutex-based map. 
 
+You can apply the same technique on slice, list, stack etc, to make them concurrent-safe if it meets your case: high concurrency reads over a single-writer.
+
 ``` Go
 
 // Only writes: RWMutex-Map is 2x faster than LR-Map 
