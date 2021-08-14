@@ -1,3 +1,8 @@
+![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/csimplestring/go-left-right/Go/master?style=for-the-badge)
+[![GitHub issues](https://img.shields.io/github/issues/csimplestring/go-left-right?style=for-the-badge)](https://github.com/csimplestring/go-left-right/issues)
+[![GitHub stars](https://img.shields.io/github/stars/csimplestring/go-left-right?style=for-the-badge)](https://github.com/csimplestring/go-left-right/stargazers)
+[![GitHub license](https://img.shields.io/github/license/csimplestring/go-left-right?style=for-the-badge)](https://github.com/csimplestring/go-left-right/blob/master/LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/github.com/csimplestring/go-left-right?style=for-the-badge)](https://goreportcard.com/report/github.com/csimplestring/bool-expr-indexer)
 
 # Go Left Right Concurrency
 A Go implementation of the left-right concurrency control algorithm in paper *<Left-Right - A Concurrency Control Technique with Wait-Free Population Oblivious Reads>*
