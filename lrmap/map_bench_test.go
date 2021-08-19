@@ -1,4 +1,4 @@
-package lrc
+package lrmap
 
 import (
 	"math/rand"
@@ -45,7 +45,7 @@ func InitLockMap(num int) *LockMap {
 }
 
 func InitLRMap(num int) *LRMap {
-	lrmap := newIntMap()
+	lrmap := NewIntMap()
 
 	for i := 0; i < num; i++ {
 		lrmap.Put(i, i)

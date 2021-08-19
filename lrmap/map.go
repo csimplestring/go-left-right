@@ -1,21 +1,24 @@
-package lrc
+package lrmap
+
+import "github.com/csimplestring/go-left-right/primitive"
 
 // LRMap utilises the left-right pattern to handle concurrent read-write.
 type LRMap struct {
-	*LeftRightPrimitive
+	*primitive.LeftRightPrimitive
 
 	left  map[int]int
 	right map[int]int
 }
 
-func newIntMap() *LRMap {
+// NewIntMap creates a default LRMap
+func NewIntMap() *LRMap {
 
 	m := &LRMap{
 		left:  make(map[int]int),
 		right: make(map[int]int),
 	}
 
-	m.LeftRightPrimitive = New()
+	m.LeftRightPrimitive = primitive.New()
 
 	return m
 }

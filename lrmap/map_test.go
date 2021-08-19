@@ -1,11 +1,11 @@
-package lrc
+package lrmap
 
 import (
 	"testing"
 )
 
 func TestLRMap(t *testing.T) {
-	lrmap := newIntMap()
+	lrmap := NewIntMap()
 
 	_, exist := lrmap.Get(1)
 	if exist {

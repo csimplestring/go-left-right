@@ -1,21 +1,18 @@
-package lrc
+package primitive
 
 import (
+	"github.com/tevino/abool"
 	"runtime"
 	"sync/atomic"
 )
 
-const ReadOnLeft int32 = -1
-const ReadOnRight int32 = 1
-
 // LeftRightPrimitive provides the basic core of the leftt-right pattern.
 type LeftRightPrimitive struct {
+	*abool.AtomicBool
 	// readIndicators is an array of 2 read-indicators, counting the reader numbers on the left/right instance
 	readIndicators [2]*readIndicator
 	// versionIndex is the index for readIndicators, 0 means reading on left, 1 means reading on right
 	versionIndex *int32
-	// sideToRead represents which instance to read
-	sideToRead *int32
 }
 
 // New creates a LeftRightPrimitive
@@ -27,29 +24,27 @@ func New() *LeftRightPrimitive {
 			newReadIndicator(),
 		},
 		versionIndex: new(int32),
-		sideToRead:   new(int32),
 	}
 
 	// starts reading on the left side
 	*m.versionIndex = 0
-	*m.sideToRead = ReadOnLeft
 	return m
 }
 
-// ReaderArrive shall be called by the reader goroutine before start reading
-func (lr *LeftRightPrimitive) ReaderArrive() int {
+// readerArrive shall be called by the reader goroutine before start reading
+func (lr *LeftRightPrimitive) readerArrive() int {
 	idx := atomic.LoadInt32(lr.versionIndex)
 	lr.readIndicators[idx].arrive()
 	return int(idx)
 }
 
-// ReaderDepart shall be called by the reader goroutine after finish reading
-func (lr *LeftRightPrimitive) ReaderDepart(localVI int) {
+// readerDepart shall be called by the reader goroutine after finish reading
+func (lr *LeftRightPrimitive) readerDepart(localVI int) {
 	lr.readIndicators[localVI].depart()
 }
 
-// WriterToggleVersionAndWait shall be called by a single writer goroutine when applying the modification
-func (lr *LeftRightPrimitive) WriterToggleVersionAndWait() {
+// writerToggleVersionAndWait shall be called by a single writer goroutine when applying the modification
+func (lr *LeftRightPrimitive) writerToggleVersionAndWait() {
 
 	localVI := atomic.LoadInt32(lr.versionIndex)
 	prevVI := int(localVI % 2)
@@ -72,37 +67,31 @@ func (lr *LeftRightPrimitive) WriterToggleVersionAndWait() {
 // ApplyReadFn applies read operation on the chosen instance, oh, I really need generics, interface type is ugly
 func (lr *LeftRightPrimitive) ApplyReadFn(l interface{}, r interface{}, fn func(interface{})) {
 
-	lvi := lr.ReaderArrive()
+	lvi := lr.readerArrive()
 
-	which := atomic.LoadInt32(lr.sideToRead)
-	if which == ReadOnLeft {
+	if lr.Toggle() {
 		fn(l)
 	} else {
 		fn(r)
 	}
 
-	lr.ReaderDepart(lvi)
+	lr.readerDepart(lvi)
 	return
 }
 
 // ApplyWriteFn applies write operation on the chosen instance, write operation is done twice, on the left and right
 // instance respectively, this might make writing longer, but the readers are wait-free.
-func (lr *LRMap) ApplyWriteFn(l interface{}, r interface{}, fn func(interface{})) {
+func (lr *LeftRightPrimitive) ApplyWriteFn(l interface{}, r interface{}, fn func(interface{})) {
 
-	side := atomic.LoadInt32(lr.sideToRead)
-	if side == ReadOnLeft {
+	if lr.Toggle() {
 		// write on right
 		fn(r)
-		atomic.StoreInt32(lr.sideToRead, ReadOnRight)
-		lr.WriterToggleVersionAndWait()
+		lr.writerToggleVersionAndWait()
 		fn(l)
-	} else if side == ReadOnRight {
+	} else {
 		// write on left
 		fn(l)
-		atomic.StoreInt32(lr.sideToRead, ReadOnLeft)
-		lr.WriterToggleVersionAndWait()
+		lr.writerToggleVersionAndWait()
 		fn(r)
-	} else {
-		panic("illegal state: you can only read on LEFT or RIGHT")
 	}
 }
