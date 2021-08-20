@@ -1,4 +1,4 @@
-package lrc
+package primitive
 
 import (
 	"runtime"
@@ -87,7 +87,7 @@ func (lr *LeftRightPrimitive) ApplyReadFn(l interface{}, r interface{}, fn func(
 
 // ApplyWriteFn applies write operation on the chosen instance, write operation is done twice, on the left and right
 // instance respectively, this might make writing longer, but the readers are wait-free.
-func (lr *LRMap) ApplyWriteFn(l interface{}, r interface{}, fn func(interface{})) {
+func (lr *LeftRightPrimitive) ApplyWriteFn(l interface{}, r interface{}, fn func(interface{})) {
 
 	side := atomic.LoadInt32(lr.sideToRead)
 	if side == ReadOnLeft {
