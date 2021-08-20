@@ -1,4 +1,4 @@
-package lrc
+package primitive
 
 import "sync/atomic"
 

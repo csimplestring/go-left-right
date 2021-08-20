@@ -1,4 +1,4 @@
-package lrc
+package primitive
 
 import (
 	"runtime"
@@ -36,20 +36,20 @@ func New() *LeftRightPrimitive {
 	return m
 }
 
-// ReaderArrive shall be called by the reader goroutine before start reading
-func (lr *LeftRightPrimitive) ReaderArrive() int {
+// readerArrive shall be called by the reader goroutine before start reading
+func (lr *LeftRightPrimitive) readerArrive() int {
 	idx := atomic.LoadInt32(lr.versionIndex)
 	lr.readIndicators[idx].arrive()
 	return int(idx)
 }
 
-// ReaderDepart shall be called by the reader goroutine after finish reading
-func (lr *LeftRightPrimitive) ReaderDepart(localVI int) {
+// readerDepart shall be called by the reader goroutine after finish reading
+func (lr *LeftRightPrimitive) readerDepart(localVI int) {
 	lr.readIndicators[localVI].depart()
 }
 
-// WriterToggleVersionAndWait shall be called by a single writer goroutine when applying the modification
-func (lr *LeftRightPrimitive) WriterToggleVersionAndWait() {
+// writerToggleVersionAndWait shall be called by a single writer goroutine when applying the modification
+func (lr *LeftRightPrimitive) writerToggleVersionAndWait() {
 
 	localVI := atomic.LoadInt32(lr.versionIndex)
 	prevVI := int(localVI % 2)
@@ -72,7 +72,7 @@ func (lr *LeftRightPrimitive) WriterToggleVersionAndWait() {
 // ApplyReadFn applies read operation on the chosen instance, oh, I really need generics, interface type is ugly
 func (lr *LeftRightPrimitive) ApplyReadFn(l interface{}, r interface{}, fn func(interface{})) {
 
-	lvi := lr.ReaderArrive()
+	lvi := lr.readerArrive()
 
 	which := atomic.LoadInt32(lr.sideToRead)
 	if which == ReadOnLeft {
@@ -81,7 +81,7 @@ func (lr *LeftRightPrimitive) ApplyReadFn(l interface{}, r interface{}, fn func(
 		fn(r)
 	}
 
-	lr.ReaderDepart(lvi)
+	lr.readerDepart(lvi)
 	return
 }
 
@@ -94,13 +94,13 @@ func (lr *LeftRightPrimitive) ApplyWriteFn(l interface{}, r interface{}, fn func
 		// write on right
 		fn(r)
 		atomic.StoreInt32(lr.sideToRead, ReadOnRight)
-		lr.WriterToggleVersionAndWait()
+		lr.writerToggleVersionAndWait()
 		fn(l)
 	} else if side == ReadOnRight {
 		// write on left
 		fn(l)
 		atomic.StoreInt32(lr.sideToRead, ReadOnLeft)
-		lr.WriterToggleVersionAndWait()
+		lr.writerToggleVersionAndWait()
 		fn(r)
 	} else {
 		panic("illegal state: you can only read on LEFT or RIGHT")
