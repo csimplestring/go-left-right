@@ -86,7 +86,7 @@ Then you can use it to wrap any data structures. See the below example.
 
 ``` Go
 
-import primitive github.com/csimplestring/go-left-right
+import github.com/csimplestring/go-left-right/primitive
 
 type LRMap struct {
 	*primitive.LeftRightPrimitive
