@@ -11,7 +11,7 @@ const ReadOnRight int32 = 1
 // LeftRightPrimitive provides the basic core of the leftt-right pattern.
 type LeftRightPrimitive struct {
 	// readIndicators is an array of 2 read-indicators, counting the reader numbers on the left/right instance
-	readIndicators [2]*readIndicator
+	readIndicators [2]ReadIndicator
 	// versionIndex is the index for readIndicators, 0 means reading on left, 1 means reading on right
 	versionIndex *int32
 	// sideToRead represents which instance to read
@@ -22,9 +22,9 @@ type LeftRightPrimitive struct {
 func New() *LeftRightPrimitive {
 
 	m := &LeftRightPrimitive{
-		readIndicators: [2]*readIndicator{
-			newReadIndicator(),
-			newReadIndicator(),
+		readIndicators: [2]ReadIndicator{
+			newDistributedAtomicReadIndicator(),
+			newDistributedAtomicReadIndicator(),
 		},
 		versionIndex: new(int32),
 		sideToRead:   new(int32),
