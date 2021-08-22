@@ -1,0 +1,4 @@
+github.com/linxGnu/go-adder v0.2.0 h1:5vI8SeW5Lz4xmRbf3lFYfTs+8cRUWjZEr5YvdToBqPc=
+github.com/linxGnu/go-adder v0.2.0/go.mod h1:t9zC6P+vQpG5iEtw4sinwsVqe52AuFvL4P1dVXHD46c=
+github.com/valyala/fastrand v1.0.0 h1:LUKT9aKer2dVQNUi3waewTbKV+7H17kvWFNKs2ObdkI=
+github.com/valyala/fastrand v1.0.0/go.mod h1:HWqCzkrkg6QXT8V2EXWvXCoow7vLwOFN002oeRzjapQ=
