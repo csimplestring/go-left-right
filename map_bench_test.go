@@ -178,3 +178,19 @@ func BenchmarkLockMap_Read_Write_100_1(b *testing.B) {
 		run(m, 100)
 	}
 }
+
+func BenchmarkLRMap_Read_Write_500_1(b *testing.B) {
+	m := InitLRMap(test_entry_size)
+
+	for i := 0; i < b.N; i++ {
+		run(m, 500)
+	}
+}
+
+func BenchmarkLockMap_Read_Write_500_1(b *testing.B) {
+	m := InitLockMap(test_entry_size)
+
+	for i := 0; i < b.N; i++ {
+		run(m, 100)
+	}
+}
