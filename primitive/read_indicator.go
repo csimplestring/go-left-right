@@ -6,33 +6,43 @@ import (
 	g "github.com/linxGnu/go-adder"
 )
 
+// ReadIndicator defines the top level interface to record how many readers.
 type ReadIndicator interface {
 	arrive()
 	depart()
 	isEmpty() bool
 }
 
-type distributedAtomicReadIndicator struct {
+// ingressEgressReaderIndicator uses the LongAdder to keep track of how many readers arrive and depart.
+// An ingress/egress technique is used.
+// A java implementation: https://github.com/pramalhe/ConcurrencyFreaks/blob/master/Java/com/concurrencyfreaks/readindicators/RIIngressEgressLongAdder.java
+type ingressEgressReaderIndicator struct {
 	ingress g.LongAdder
 	egress  g.LongAdder
 }
 
-func newDistributedAtomicReadIndicator() *distributedAtomicReadIndicator {
-	return &distributedAtomicReadIndicator{
+// newDistributedAtomicReadIndicator creates a new distributedAtomicReadIndicator.
+func newDistributedAtomicReadIndicator() *ingressEgressReaderIndicator {
+	return &ingressEgressReaderIndicator{
 		ingress: g.NewJDKAdder(),
 		egress:  g.NewJDKAdder(),
 	}
 }
 
-func (d *distributedAtomicReadIndicator) arrive() {
+// arrive indicates a new reader enters.
+func (d *ingressEgressReaderIndicator) arrive() {
 	d.ingress.Inc()
 }
 
-func (d *distributedAtomicReadIndicator) depart() {
+// depart indicates a reader left.
+func (d *ingressEgressReaderIndicator) depart() {
 	d.egress.Inc()
 }
 
-func (d *distributedAtomicReadIndicator) isEmpty() bool {
+// isEmpty shows if all the readers depart.
+func (d *ingressEgressReaderIndicator) isEmpty() bool {
+	// the order is very important.
+	// the LongAdder is sequentially consitent only if you use Inc and Sum, see: http://concurrencyfreaks.blogspot.com/2013/09/longadder-is-not-sequentially-consistent.html
 	return d.egress.Sum() == d.ingress.Sum()
 }
 
