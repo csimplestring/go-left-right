@@ -9,7 +9,7 @@ const ReadOnLeft int32 = -1
 const ReadOnRight int32 = 1
 
 // LeftRightPrimitive provides the basic core of the leftt-right pattern.
-type LeftRightPrimitive struct {
+type LeftRightPrimitive[T any] struct {
 	// readIndicators is an array of 2 read-indicators, counting the reader numbers on the left/right instance
 	readIndicators [2]ReadIndicator
 	// versionIndex is the index for readIndicators, 0 means reading on left, 1 means reading on right
@@ -19,9 +19,9 @@ type LeftRightPrimitive struct {
 }
 
 // New creates a LeftRightPrimitive
-func New() *LeftRightPrimitive {
+func New[T any]() *LeftRightPrimitive[T] {
 
-	m := &LeftRightPrimitive{
+	m := &LeftRightPrimitive[T]{
 		readIndicators: [2]ReadIndicator{
 			newDistributedAtomicReadIndicator(),
 			newDistributedAtomicReadIndicator(),
@@ -37,19 +37,19 @@ func New() *LeftRightPrimitive {
 }
 
 // readerArrive shall be called by the reader goroutine before start reading
-func (lr *LeftRightPrimitive) readerArrive() int {
+func (lr *LeftRightPrimitive[T]) readerArrive() int {
 	idx := atomic.LoadInt32(lr.versionIndex)
 	lr.readIndicators[idx].arrive()
 	return int(idx)
 }
 
 // readerDepart shall be called by the reader goroutine after finish reading
-func (lr *LeftRightPrimitive) readerDepart(localVI int) {
+func (lr *LeftRightPrimitive[T]) readerDepart(localVI int) {
 	lr.readIndicators[localVI].depart()
 }
 
 // writerToggleVersionAndWait shall be called by a single writer goroutine when applying the modification
-func (lr *LeftRightPrimitive) writerToggleVersionAndWait() {
+func (lr *LeftRightPrimitive[T]) writerToggleVersionAndWait() {
 
 	localVI := atomic.LoadInt32(lr.versionIndex)
 	prevVI := int(localVI % 2)
@@ -70,7 +70,7 @@ func (lr *LeftRightPrimitive) writerToggleVersionAndWait() {
 }
 
 // ApplyReadFn applies read operation on the chosen instance, oh, I really need generics, interface type is ugly
-func (lr *LeftRightPrimitive) ApplyReadFn(l interface{}, r interface{}, fn func(interface{})) {
+func (lr *LeftRightPrimitive[T]) ApplyReadFn(l T, r T, fn func(T)) {
 
 	lvi := lr.readerArrive()
 
@@ -87,7 +87,7 @@ func (lr *LeftRightPrimitive) ApplyReadFn(l interface{}, r interface{}, fn func(
 
 // ApplyWriteFn applies write operation on the chosen instance, write operation is done twice, on the left and right
 // instance respectively, this might make writing longer, but the readers are wait-free.
-func (lr *LeftRightPrimitive) ApplyWriteFn(l interface{}, r interface{}, fn func(interface{})) {
+func (lr *LeftRightPrimitive[T]) ApplyWriteFn(l T, r T, fn func(T)) {
 
 	side := atomic.LoadInt32(lr.sideToRead)
 	if side == ReadOnLeft {

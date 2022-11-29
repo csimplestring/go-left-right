@@ -78,8 +78,13 @@ See all the details: [link](https://github.com/CppCon/CppCon2015/blob/master/Pre
 
 # How
 
+After go 1.18 
 ```bash
-go get github.com/csimplestring/go-left-right
+go get github.com/csimplestring/go-left-right@v1.0
+```
+Before go 1.18
+```bash
+go get github.com/csimplestring/go-left-right@v0.0.3
 ```
 
 Then you can use it to wrap any data structures. See the below example.
@@ -89,7 +94,7 @@ Then you can use it to wrap any data structures. See the below example.
 import github.com/csimplestring/go-left-right/primitive
 
 type LRMap struct {
-	*primitive.LeftRightPrimitive
+	*primitive.LeftRightPrimitive[map[int]int]
 
     // you have to provides 2 identical instances
 	left  map[int]int
@@ -103,7 +108,7 @@ func newIntMap() *LRMap {
 		right: make(map[int]int),
 	}
 
-	m.LeftRightPrimitive = primitive.New()
+	m.LeftRightPrimitive = primitive.New[map[int]int]()
 
 	return m
 }
@@ -111,18 +116,16 @@ func newIntMap() *LRMap {
 func (lr *LRMap) Get(k int) (val int, exist bool) {
 
     // Go does not have generics, so have to use interface{} for lambda's arguments
-	lr.ApplyReadFn(lr.left, lr.right, func(instance interface{}) {
-		m := instance.(map[int]int)
-		val, exist = m[k]
+	lr.ApplyReadFn(lr.left, lr.right, func(instance map[int]int) {
+		val, exist = instance[k]
 	})
 
 	return
 }
 
 func (lr *LRMap) Put(key, val int) {
-	lr.ApplyWriteFn(lr.left, lr.right, func(instance interface{}) {
-		m := instance.(map[int]int)
-		m[key] = val
+	lr.ApplyWriteFn(lr.left, lr.right, func(instance map[int]int) {
+		instance[key] = val
 	})
 }
 ```
